@@ -1,4 +1,4 @@
-package com.bfec.dsdemo;
+package com.bfec.dsdemo.controller;
 
 import java.text.DateFormat;
 import java.util.Date;
