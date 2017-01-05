@@ -8,10 +8,10 @@ http://www.springframework.org/schema/aop
 http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 ">
 
-	<bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
-		<property name="url" value="${jdbc_url}" />
-		<property name="username" value="${jdbc_username}" />
-		<property name="password" value="${jdbc_password}" />
+	<bean name="dataSource1" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="url" value="${jdbc_url_db1}" />
+		<property name="username" value="${jdbc_username_db1}" />
+		<property name="password" value="${jdbc_password_db1}" />
 	
 		<property name="initialSize" value="0" />		
 		<property name="maxActive" value="20" />	
@@ -30,9 +30,68 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 		<property name="logAbandoned" value="true" />
 		<property name="filters" value="mergeStat" />
 	</bean>
+	
+	<bean name="dataSource2" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="url" value="${jdbc_url_db2}" />
+		<property name="username" value="${jdbc_username_db2}" />
+		<property name="password" value="${jdbc_password_db2}" />
+	
+		<property name="initialSize" value="0" />		
+		<property name="maxActive" value="20" />	
+		<property name="maxIdle" value="20" />
+		<property name="minIdle" value="0" />		
+		<property name="maxWait" value="60000" />
+		
+		<property name="validationQuery" value="${validationQuery}" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="testWhileIdle" value="true" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="minEvictableIdleTimeMillis" value="25200000" />
+		<property name="removeAbandoned" value="true" />
+		<property name="removeAbandonedTimeout" value="1800" />
+		<property name="logAbandoned" value="true" />
+		<property name="filters" value="mergeStat" />
+	</bean>
+	
+	<bean name="dataSource3" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="url" value="${jdbc_url_db3}" />
+		<property name="username" value="${jdbc_username_db3}" />
+		<property name="password" value="${jdbc_password_db3}" />
+	
+		<property name="initialSize" value="0" />		
+		<property name="maxActive" value="20" />	
+		<property name="maxIdle" value="20" />
+		<property name="minIdle" value="0" />		
+		<property name="maxWait" value="60000" />
+		
+		<property name="validationQuery" value="${validationQuery}" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<property name="testWhileIdle" value="true" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="minEvictableIdleTimeMillis" value="25200000" />
+		<property name="removeAbandoned" value="true" />
+		<property name="removeAbandonedTimeout" value="1800" />
+		<property name="logAbandoned" value="true" />
+		<property name="filters" value="mergeStat" />
+	</bean>
+	
+	<bean id="dynamicDataSource" class="com.bfec.dsdemo.dynamicds.support.DynamicDataSource">
+		<property name="targetDataSources">
+		<map key-type="java.lang.String">  
+            <!-- 指定lookupKey和与之对应的数据源 -->  
+            <entry key="dataSource1" value-ref="dataSource1"></entry>    
+            <entry key="dataSource2" value-ref="dataSource2"></entry>    
+            <entry key="dataSource3" value-ref="dataSource3"></entry>    
+        </map>
+		</property>
+		<!-- 默认数据源 -->  
+        <property name="defaultTargetDataSource" ref="dataSource1" />
+	</bean>
 
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
+		<property name="dataSource" ref="dynamicDataSource" />
 		<property name="mapperLocations" value="classpath:com/bfec/dsdemo/mapping/*.xml" />
 	</bean>
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
@@ -41,7 +100,7 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 	</bean>
 
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="dataSource" />
+		<property name="dataSource" ref="dynamicDataSource" />
 	</bean>
 	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
 		<tx:attributes>
@@ -58,6 +117,7 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 			<tx:method name="delAndRepair" propagation="REQUIRED" />
 
 			<tx:method name="get*" propagation="SUPPORTS" />
+			<tx:method name="query*" propagation="SUPPORTS" />
 			<tx:method name="find*" propagation="SUPPORTS" />
 			<tx:method name="load*" propagation="SUPPORTS" />
 			<tx:method name="search*" propagation="SUPPORTS" />
@@ -66,9 +126,15 @@ http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 			<tx:method name="*" propagation="SUPPORTS" />
 		</tx:attributes>
 	</tx:advice>
+	<bean id="dataSourceSupport" class="com.bfec.dsdemo.dynamicds.support.DataSourceSupport"></bean>
 	<aop:config>
 		<aop:pointcut id="transactionPointcut" expression="execution(* com.bfec.dsdemo.service..*Impl.*(..))" />
 		<aop:advisor pointcut-ref="transactionPointcut" advice-ref="transactionAdvice" />
+		<aop:aspect ref="dataSourceSupport">
+		    <!-- 拦截所有service方法 -->  
+            <aop:pointcut id="dataSourcePointcut" expression="execution(* com.bfec.dsdemo.service..*Impl.*(..))"/>  
+            <aop:before pointcut-ref="dataSourcePointcut" method="interceptMethod" />
+		</aop:aspect>
 	</aop:config>
 
 </beans>

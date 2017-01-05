@@ -5,6 +5,8 @@
  */
 package com.bfec.dsdemo.service;
 
+import java.util.List;
+
 import com.bfec.dsdemo.model.TestBean;
 
 /**
@@ -25,4 +27,6 @@ public interface TestBeanService {
     int updateByPrimaryKeySelective(TestBean record);
 
     int updateByPrimaryKey(TestBean record);
+    
+    List<TestBean> queryAll();
 }

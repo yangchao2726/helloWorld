@@ -5,11 +5,14 @@
  */
 package com.bfec.dsdemo.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bfec.dsdemo.dao.TestBeanMapper;
+import com.bfec.dsdemo.dynamicds.annotation.DataSource;
 import com.bfec.dsdemo.model.TestBean;
 import com.bfec.dsdemo.service.TestBeanService;
 
@@ -20,6 +23,7 @@ import com.bfec.dsdemo.service.TestBeanService;
  */
 @Service("testBeanService")
 @Transactional
+@DataSource(value = "dataSource3")
 public class TestBeanServiceImpl implements TestBeanService {
 	
 	@Autowired
@@ -53,6 +57,11 @@ public class TestBeanServiceImpl implements TestBeanService {
 	@Override
 	public int updateByPrimaryKey(TestBean record) {
 		return testBeanMapper.updateByPrimaryKey(record);
+	}
+
+	@Override
+	public List<TestBean> queryAll() {
+		return testBeanMapper.queryAll();
 	}
 
 }

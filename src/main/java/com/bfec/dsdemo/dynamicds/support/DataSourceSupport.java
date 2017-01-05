@@ -15,13 +15,7 @@ import com.bfec.dsdemo.dynamicds.annotation.DataSource;
 
 /**
  * @Description:@Description:AOP类根据注解com.bfec.dsdemo.dynamicds.annotation.DataSource 
- *                                                                                   的数据源名称更新数据源DynamicDataSourceHolder
- *                                                                                   .
- *                                                                                   setDataSource
- *                                                                                   (
- *                                                                                   .
- *                                                                                   .
- *                                                                                   )
+ * 的数据源名称更新数据源DynamicDataSourceHolder.setDataSource(..)
  * @author:YC
  * @time:2017年1月4日 下午5:22:36
  */

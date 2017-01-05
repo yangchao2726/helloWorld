@@ -1,5 +1,7 @@
 package com.bfec.dsdemo.dao;
 
+import java.util.List;
+
 import com.bfec.dsdemo.model.TestBean;
 
 
@@ -15,4 +17,6 @@ public interface TestBeanMapper {
     int updateByPrimaryKeySelective(TestBean record);
 
     int updateByPrimaryKey(TestBean record);
+    
+    List<TestBean> queryAll();
 }

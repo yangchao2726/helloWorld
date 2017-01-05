@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bfec.dsdemo.dao.MUserMapper;
+import com.bfec.dsdemo.dynamicds.annotation.DataSource;
 import com.bfec.dsdemo.model.MUser;
 import com.bfec.dsdemo.service.MUserServiceI;
 
 @Transactional
 @Service("muserService")
+@DataSource("dataSource3")
 public class MUserServiceImpl implements MUserServiceI{
 
 	@Autowired
@@ -24,9 +26,7 @@ public class MUserServiceImpl implements MUserServiceI{
 
 	@Override
 	public int insert(MUser muser) throws Exception {
-		muserMapper.insert(muser);
-		if(1==1) throw new Exception("检测事务正确性");
-		return 0;
+		return muserMapper.insert(muser);
 	}
 
 	@Override
