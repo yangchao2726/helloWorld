@@ -5,6 +5,7 @@
  */
 package com.bfec.dsdemo.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.bfec.dsdemo.dao.TestBeanMapper;
 import com.bfec.dsdemo.dynamicds.annotation.DataSource;
+import com.bfec.dsdemo.dynamicds.support.DynamicDataSourceHolder;
 import com.bfec.dsdemo.model.TestBean;
 import com.bfec.dsdemo.service.TestBeanService;
 
@@ -23,7 +25,7 @@ import com.bfec.dsdemo.service.TestBeanService;
  */
 @Service("testBeanService")
 @Transactional
-@DataSource(value = "dataSource3")
+//@DataSource(value = "dataSource3")
 public class TestBeanServiceImpl implements TestBeanService {
 	
 	@Autowired
@@ -61,7 +63,17 @@ public class TestBeanServiceImpl implements TestBeanService {
 
 	@Override
 	public List<TestBean> queryAll() {
-		return testBeanMapper.queryAll();
+		List<TestBean> list = new ArrayList<TestBean>();
+//		DynamicDataSourceHolder.clearDataSource();
+		DynamicDataSourceHolder.setDataSource("dataSource1");
+		list.addAll(testBeanMapper.queryAll());
+		DynamicDataSourceHolder.clearDataSource();
+//		DynamicDataSourceHolder.setDataSource("dataSource3");
+		list.addAll(testBeanMapper.queryAll());
+//		DynamicDataSourceHolder.clearDataSource();
+		DynamicDataSourceHolder.setDataSource("dataSource2");
+		list.addAll(testBeanMapper.queryAll());
+		return list;
 	}
 
 }

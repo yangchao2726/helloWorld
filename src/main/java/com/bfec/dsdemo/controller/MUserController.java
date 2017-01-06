@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.bfec.dsdemo.model.MUser;
 import com.bfec.dsdemo.model.TestBean;
-import com.bfec.dsdemo.service.MUserServiceI;
+import com.bfec.dsdemo.service.MUserService;
 import com.bfec.dsdemo.service.TestBeanService;
 
 @Controller
@@ -20,7 +20,7 @@ import com.bfec.dsdemo.service.TestBeanService;
 public class MUserController {
 
 	@Autowired
-	private MUserServiceI muserService;
+	private MUserService muserService;
 	
 	@Autowired
 	private TestBeanService testBeanService;
@@ -40,7 +40,7 @@ public class MUserController {
 		// muser.setId(id);
 		try {
 			muserService.insert(muser);
-			testBeanService.insert(new TestBean(muser.getName()));
+//			testBeanService.insert(new TestBean(muser.getName()));
 		} catch (Exception e) {
 			log.error("ÐÂÔöÒì³£", e);
 			e.printStackTrace();

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bfec.dsdemo.model.MUser;
 
-public interface MUserServiceI {
+public interface MUserService {
 
 	List<MUser> getAll();
 	

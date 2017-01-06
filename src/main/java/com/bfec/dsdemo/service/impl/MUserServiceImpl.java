@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bfec.dsdemo.dao.MUserMapper;
 import com.bfec.dsdemo.dynamicds.annotation.DataSource;
 import com.bfec.dsdemo.model.MUser;
-import com.bfec.dsdemo.service.MUserServiceI;
+import com.bfec.dsdemo.service.MUserService;
 
 @Transactional
 @Service("muserService")
 @DataSource("dataSource3")
-public class MUserServiceImpl implements MUserServiceI{
+public class MUserServiceImpl implements MUserService{
 
 	@Autowired
 	private MUserMapper muserMapper;
@@ -25,6 +25,7 @@ public class MUserServiceImpl implements MUserServiceI{
 	}
 
 	@Override
+	@DataSource("dataSource2")
 	public int insert(MUser muser) throws Exception {
 		return muserMapper.insert(muser);
 	}
