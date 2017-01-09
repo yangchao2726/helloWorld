@@ -13,11 +13,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.bfec.dsdemo.model.TestBean;
 import com.bfec.dsdemo.service.TestBeanService;
+import com.bfec.dsdemo.utils.StringUtils;
 
 /**
  * @Description:TODO
@@ -42,7 +42,7 @@ public class TestBeanController {
 	
 	@RequestMapping("/addBean")
 	public String addBean(TestBean bean) {
-		// 去除字符串的空白字符
+		// 去除字符串的空白字符 (Spring工具类有同样方法)
 		bean.setName(StringUtils.trimAllWhitespace(bean.getName()));
 		log.info("TestBeanController.addBean()");
 		testBeanService.insert(bean);
