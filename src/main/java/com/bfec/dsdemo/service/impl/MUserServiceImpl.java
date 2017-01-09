@@ -4,14 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.bfec.dsdemo.dao.MUserMapper;
 import com.bfec.dsdemo.dynamicds.annotation.DataSource;
 import com.bfec.dsdemo.model.MUser;
 import com.bfec.dsdemo.service.MUserService;
 
-@Transactional
 @Service("muserService")
 @DataSource("dataSource3")
 public class MUserServiceImpl implements MUserService{

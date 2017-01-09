@@ -59,6 +59,9 @@ public class TestBeanServiceImpl implements TestBeanService {
 		return testBeanMapper.updateByPrimaryKey(record);
 	}
 
+	/* ******方法在事务监控中，不能切换数据源
+	 * @see com.bfec.dsdemo.service.TestBeanService#reportAll()
+	 */
 	@Override
 	public List<TestBean> reportAll() {
 		List<TestBean> list = new ArrayList<TestBean>();

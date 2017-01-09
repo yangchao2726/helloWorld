@@ -7,6 +7,7 @@ http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
 http://www.springframework.org/schema/aop 
 http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
 ">
+	<!-- 数据库配置应置于事务配置之前  否则方法的数据源切换无法实现 -->
 	<bean name="baseDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
 		<property name="url" value="${jdbc_url_db1}" />
 		<property name="username" value="${jdbc_username_db1}" />
