@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.bfec.dsdemo.model.TestBean;
@@ -41,6 +42,8 @@ public class TestBeanController {
 	
 	@RequestMapping("/addBean")
 	public String addBean(TestBean bean) {
+		// È¥³ý×Ö·û´®µÄ¿Õ°××Ö·û
+		bean.setName(StringUtils.trimAllWhitespace(bean.getName()));
 		log.info("TestBeanController.addBean()");
 		testBeanService.insert(bean);
 		return "redirect:/testbean/listBean.do";
