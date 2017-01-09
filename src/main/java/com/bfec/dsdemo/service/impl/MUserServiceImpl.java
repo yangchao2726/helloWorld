@@ -25,7 +25,7 @@ public class MUserServiceImpl implements MUserService{
 	}
 
 	@Override
-	@DataSource("dataSource2")
+	@DataSource("dataSource1")
 	public int insert(MUser muser) throws Exception {
 		return muserMapper.insert(muser);
 	}

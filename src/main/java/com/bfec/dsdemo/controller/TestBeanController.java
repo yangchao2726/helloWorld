@@ -33,9 +33,16 @@ public class TestBeanController {
 	private Log log = LogFactory.getLog(MUserController.class);
 	
 	@RequestMapping(value = "/listBean")
-	public String listUser(HttpServletRequest request) {
-		List<TestBean> list = testBeanService.queryAll();
+	public String listBean(HttpServletRequest request) {
+		List<TestBean> list = testBeanService.reportAll();
 		request.setAttribute("beanlist", list);
 		return "testbean/listBean";
+	}
+	
+	@RequestMapping("/addBean")
+	public String addBean(TestBean bean) {
+		log.info("TestBeanController.addBean()");
+		testBeanService.insert(bean);
+		return "redirect:/testbean/listBean.do";
 	}
 }

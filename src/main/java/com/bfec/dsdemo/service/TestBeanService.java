@@ -28,5 +28,5 @@ public interface TestBeanService {
 
     int updateByPrimaryKey(TestBean record);
     
-    List<TestBean> queryAll();
+    List<TestBean> reportAll();
 }
