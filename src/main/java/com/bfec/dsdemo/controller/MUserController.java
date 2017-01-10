@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.bfec.dsdemo.model.MUser;
-import com.bfec.dsdemo.model.TestBean;
 import com.bfec.dsdemo.service.MUserService;
 import com.bfec.dsdemo.service.TestBeanService;
 
