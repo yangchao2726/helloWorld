@@ -1,4 +1,4 @@
-package com.app.common.utils;
+package com.bfec.dsdemo.utils;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
