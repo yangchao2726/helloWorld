@@ -13,9 +13,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Description:按照SVN--changeLog打包
@@ -24,17 +30,40 @@ import java.util.Set;
  */
 public class PackageUtil {
 
-	public static String patchFile = "C:/Users/admin/Desktop/changeLog.txt";// 补丁文件,由eclipse svn生成
+	/** 
+	* @Description: PATCH_FILE : 补丁文件,由eclipse svn生成
+	*/
+	public static final String PATCH_FILE = "C:/Users/admin/Desktop/changeLog.txt";
 
-	public static String projectPath = "D:/eclipseWorkplace/dpt";// 项目文件夹路径
+	/** 
+	* @Description: PROJECT_PATH : 项目文件夹路径
+	*/
+	public static final String PROJECT_PATH = "D:/eclipseWorkplace/dpt";
 
-	public static String webContent = "WebRoot";// web应用文件夹名
+	/** 
+	* @Description: WEB_ROOT : web应用文件夹名
+	*/
+	public static final String WEB_ROOT = "/WebRoot";
 
-	public static String classPath = "D:/eclipseWorkplace/dpt/WebRoot/WEB-INF/classes";// class存放路径
+	/** 
+	* @Description: CLASS_PATH : class存放路径
+	*/
+	public static final String CLASS_PATH = "D:/eclipseWorkplace/dpt/WebRoot/WEB-INF/classes";
 
-	public static String desPath = "C:/Users/admin/Desktop/update_pkg";// 补丁文件包存放路径
+	/** 
+	* @Description: DES_PATH : 补丁文件包存放路径
+	*/
+	public static final String DES_PATH = "C:/Users/admin/Desktop/update_pkg/";
 
-	public static String version = "20140711";// 补丁版本
+	/** 
+	* @Description: VERSION : 补丁版本
+	*/
+	public static String version = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+	
+	/** 
+	* @Description: versionList : 本次打包所包含的所有svn版本
+	*/
+	public static List<Integer> versionList = new ArrayList<Integer>();
 
 	/**
 	 * @param args
@@ -45,21 +74,25 @@ public class PackageUtil {
 	}
 
 	public static Set<String> getPatchFileList() {
-		Set<String> fileList = new HashSet<String>();
+		Set<String> fileSet = new HashSet<String>();
 		FileInputStream f = null;
 		BufferedReader dr = null;
-		String reg="^\\d+$";
+		Pattern p = Pattern.compile("^r\\d+");
+		Matcher matcher = null;
 		String line;
 		try {
-			f = new FileInputStream(patchFile);
+			f = new FileInputStream(PATCH_FILE);
 			dr = new BufferedReader(new InputStreamReader(f, "utf-8"));
 			while ((line = dr.readLine()) != null) {
 				if (line.indexOf("	A") != -1 || line.indexOf("	M") != -1) {
 					line = line.replaceAll("	M ", "").replaceAll("	A ", "");
 					line = line.substring(line.indexOf(":") + 1, line.length());
-					fileList.add(line);
-				}else if(line.matches(reg)) {
-					
+					if(new File(line).isFile()) fileSet.add(line);
+				}else {
+					matcher = p.matcher(line);
+					if(matcher.find()) {
+						versionList.add(Integer.parseInt(matcher.group(0).replace("r", "")));
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -76,24 +109,25 @@ public class PackageUtil {
 				e.printStackTrace();
 			}
 		}
-		return fileList;
+		Collections.sort(versionList);
+		return fileSet;
 	}
 
-	public static void copyFiles(Set<String> set) {
+	public static void copyFiles(Set<String> set) throws IOException {
 		for (String fullFileName : set) {
-			if (fullFileName.indexOf("src/") != -1) {// 对源文件目录下的文件处理
-//				String fileName = fullFileName.replace("src", "");
+			// 对源文件目录下的文件处理
+			if (fullFileName.indexOf("src/") != -1) {
 				String fileName = fullFileName.substring(fullFileName.indexOf("src")+3);
-				fullFileName = classPath + fileName;
+				fullFileName = CLASS_PATH + fileName;
 				if (fileName.endsWith(".java")) {
 					fileName = fileName.replace(".java", ".class");
 					fullFileName = fullFileName.replace(".java", ".class");
 				}
 				String tempDesPath = fileName.substring(0,
 						fileName.lastIndexOf("/"));
-				String desFilePathStr = desPath + "/" + version
+				String desFilePathStr = DES_PATH + version
 						+ "/WEB-INF/classes" + tempDesPath;
-				String desFileNameStr = desPath + "/" + version
+				String desFileNameStr = DES_PATH + version
 						+ "/WEB-INF/classes" + fileName;
 				File desFilePath = new File(desFilePathStr);
 				if (!desFilePath.exists()) {
@@ -101,10 +135,11 @@ public class PackageUtil {
 				}
 				copyFile(fullFileName, desFileNameStr);
 				System.out.println(fullFileName + "复制完成");
-			} else {// 对普通目录的处理
-				String desFileName = fullFileName.replaceAll(webContent, "");
-				fullFileName = projectPath + "/" + fullFileName;// 将要复制的文件全路径
-				String fullDesFileNameStr = desPath + "/" + version
+			} else {
+				// 对普通目录的处理
+				String desFileName = fullFileName.substring(fullFileName.indexOf(WEB_ROOT));
+				fullFileName = PROJECT_PATH + desFileName;// 将要复制的文件全路径
+				String fullDesFileNameStr = DES_PATH + version
 						+ desFileName;
 				String desFilePathStr = fullDesFileNameStr.substring(0,
 						fullDesFileNameStr.lastIndexOf("/"));
@@ -120,14 +155,10 @@ public class PackageUtil {
 
 	}
 
-	private static void copyFile(String sourceFileNameStr, String desFileNameStr) {
+	private static void copyFile(String sourceFileNameStr, String desFileNameStr) throws IOException {
 		File srcFile = new File(sourceFileNameStr);
 		File desFile = new File(desFileNameStr);
-		try {
-			copyFile(srcFile, desFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		copyFile(srcFile, desFile);
 	}
 
 	public static void copyFile(File sourceFile, File targetFile) throws IOException {
