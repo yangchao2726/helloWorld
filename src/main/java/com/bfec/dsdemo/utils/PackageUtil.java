@@ -44,6 +44,8 @@ public class PackageUtil {
 	* @Description: WEB_ROOT : web应用文件夹名
 	*/
 	public static final String WEB_ROOT = "/WebRoot";
+	
+	public static final String CONFIG = "config";
 
 	/** 
 	* @Description: CLASS_PATH : class存放路径
@@ -54,23 +56,35 @@ public class PackageUtil {
 	* @Description: DES_PATH : 补丁文件包存放路径
 	*/
 	public static final String DES_PATH = "C:/Users/admin/Desktop/update_pkg/";
-
-	/** 
-	* @Description: VERSION : 补丁版本
-	*/
-	public static String version = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 	
 	/** 
 	* @Description: versionList : 本次打包所包含的所有svn版本
 	*/
 	public static List<Integer> versionList = new ArrayList<Integer>();
+	
+	/** 
+	* @Description: packageCNT : 打包文件计数
+	*/
+	public static int packageCNT = 0;
+	
+	public static int unKnownFileCNT = 0;
+	
+	/** 
+	 * @Description: VERSION : 补丁版本
+	 */
+	public static String version = "";
 
+	static {
+		version = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+	}
 	/**
 	 * @param args
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		copyFiles(getPatchFileList());
+		System.out.println("共打包文件："+packageCNT+"个；");
+		System.out.println("未处理文件："+unKnownFileCNT+"个；");
 	}
 
 	public static Set<String> getPatchFileList() {
@@ -87,7 +101,7 @@ public class PackageUtil {
 				if (line.indexOf("	A") != -1 || line.indexOf("	M") != -1) {
 					line = line.replaceAll("	M ", "").replaceAll("	A ", "");
 					line = line.substring(line.indexOf(":") + 1, line.length());
-					if(new File(line).isFile()) fileSet.add(line);
+					fileSet.add(line);
 				}else {
 					matcher = p.matcher(line);
 					if(matcher.find()) {
@@ -115,7 +129,7 @@ public class PackageUtil {
 
 	public static void copyFiles(Set<String> set) throws IOException {
 		for (String fullFileName : set) {
-			// 对源文件目录下的文件处理
+			// 二进制文件处理
 			if (fullFileName.indexOf("src/") != -1) {
 				String fileName = fullFileName.substring(fullFileName.indexOf("src")+3);
 				fullFileName = CLASS_PATH + fileName;
@@ -123,11 +137,12 @@ public class PackageUtil {
 					fileName = fileName.replace(".java", ".class");
 					fullFileName = fullFileName.replace(".java", ".class");
 				}
+				if(isNotFile(fullFileName)) continue;
 				String tempDesPath = fileName.substring(0,
 						fileName.lastIndexOf("/"));
-				String desFilePathStr = DES_PATH + version
+				String desFilePathStr = DES_PATH + version + WEB_ROOT
 						+ "/WEB-INF/classes" + tempDesPath;
-				String desFileNameStr = DES_PATH + version
+				String desFileNameStr = DES_PATH + version + WEB_ROOT
 						+ "/WEB-INF/classes" + fileName;
 				File desFilePath = new File(desFilePathStr);
 				if (!desFilePath.exists()) {
@@ -135,8 +150,25 @@ public class PackageUtil {
 				}
 				copyFile(fullFileName, desFileNameStr);
 				System.out.println(fullFileName + "复制完成");
-			} else {
-				// 对普通目录的处理
+			}else if (fullFileName.indexOf(CONFIG+"/") != -1) {
+				// 配置文件处理
+				String fileName = fullFileName.substring(fullFileName.indexOf(CONFIG)+CONFIG.length());
+				fullFileName = CLASS_PATH + fileName;
+				if(isNotFile(fullFileName)) continue;
+				String tempDesPath = fileName.substring(0,
+						fileName.lastIndexOf("/"));
+				String desFilePathStr = DES_PATH + version + WEB_ROOT
+						+ "/WEB-INF/classes" + tempDesPath;
+				String desFileNameStr = DES_PATH + version + WEB_ROOT
+						+ "/WEB-INF/classes" + fileName;
+				File desFilePath = new File(desFilePathStr);
+				if (!desFilePath.exists()) {
+					desFilePath.mkdirs();
+				}
+				copyFile(fullFileName, desFileNameStr);
+				System.out.println(fullFileName + "复制完成");
+			}else if (fullFileName.indexOf(WEB_ROOT) != -1) {
+				// 静态文件处理
 				String desFileName = fullFileName.substring(fullFileName.indexOf(WEB_ROOT));
 				fullFileName = PROJECT_PATH + desFileName;// 将要复制的文件全路径
 				String fullDesFileNameStr = DES_PATH + version
@@ -147,12 +179,22 @@ public class PackageUtil {
 				if (!desFilePath.exists()) {
 					desFilePath.mkdirs();
 				}
+				if(isNotFile(fullFileName)) continue;
 				copyFile(fullFileName, fullDesFileNameStr);
-				System.out.println(fullDesFileNameStr + "复制完成");
+				System.out.println(fullFileName + "复制完成");
+			}else {
+				unKnownFileCNT++;
+				System.out.println("未识别文件:"+fullFileName);
 			}
-
+			packageCNT++;
 		}
-
+	}
+	
+	private static boolean isNotFile(String fileName) {
+		File file = null;
+		file = new File(fileName);
+		if(file.isFile()) return false;
+		return true;
 	}
 
 	private static void copyFile(String sourceFileNameStr, String desFileNameStr) throws IOException {
