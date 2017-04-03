@@ -33,12 +33,12 @@ public class PackageUtil {
 	/** 
 	* @Description: PATCH_FILE : 补丁文件,由eclipse svn生成
 	*/
-	public static final String PATCH_FILE = "C:/Users/admin/Desktop/changeLog.txt";
+	public static final String PATCH_FILE = "C:\\Users\\Administrator\\Desktop\\changeLog.txt";
 
 	/** 
 	* @Description: PROJECT_PATH : 项目文件夹路径
 	*/
-	public static final String PROJECT_PATH = "D:/eclipseWorkplace/dpt";
+	public static final String PROJECT_PATH = "F:\\WorkSpace_for_package\\dpt";
 
 	/** 
 	* @Description: WEB_ROOT : web应用文件夹名
@@ -50,12 +50,12 @@ public class PackageUtil {
 	/** 
 	* @Description: CLASS_PATH : class存放路径
 	*/
-	public static final String CLASS_PATH = "D:/eclipseWorkplace/dpt/WebRoot/WEB-INF/classes";
+	public static final String CLASS_PATH = "F:\\WorkSpace_for_package\\dpt\\WebRoot\\WEB-INF\\classes";
 
 	/** 
 	* @Description: DES_PATH : 补丁文件包存放路径
 	*/
-	public static final String DES_PATH = "C:/Users/admin/Desktop/update_pkg/";
+	public static final String DES_PATH = "C:\\Users\\Administrator\\Desktop\\update_pkg\\";
 	
 	/** 
 	* @Description: versionList : 本次打包所包含的所有svn版本
@@ -133,23 +133,36 @@ public class PackageUtil {
 			if (fullFileName.indexOf("src/") != -1) {
 				String fileName = fullFileName.substring(fullFileName.indexOf("src")+3);
 				fullFileName = CLASS_PATH + fileName;
+				String srcParentPath = "";
+				String realFileName = "";
+				boolean classFileFlag = false;
 				if (fileName.endsWith(".java")) {
 					fileName = fileName.replace(".java", ".class");
 					fullFileName = fullFileName.replace(".java", ".class");
+					classFileFlag = true;
 				}
 				if(isNotFile(fullFileName)) continue;
-				String tempDesPath = fileName.substring(0,
-						fileName.lastIndexOf("/"));
-				String desFilePathStr = DES_PATH + version + WEB_ROOT
-						+ "/WEB-INF/classes" + tempDesPath;
-				String desFileNameStr = DES_PATH + version + WEB_ROOT
-						+ "/WEB-INF/classes" + fileName;
+				String tempDesPath = fileName.substring(0,fileName.lastIndexOf("/"));
+				String desFilePathStr = getDesFilePath(tempDesPath);
+				String desFileNameStr = getDesFilePath(fileName);
 				File desFilePath = new File(desFilePathStr);
 				if (!desFilePath.exists()) {
 					desFilePath.mkdirs();
 				}
 				copyFile(fullFileName, desFileNameStr);
 				System.out.println(fullFileName + "复制完成");
+				if(classFileFlag) {
+					srcParentPath = fullFileName.substring(0, fullFileName.lastIndexOf("/"));
+					realFileName = fullFileName.substring(fullFileName.lastIndexOf("/")+1, fullFileName.length()-6);
+					File parentPath = new File(srcParentPath);
+					File[] filesInSameFolder = parentPath.listFiles();
+					for(File tempFile : filesInSameFolder) {
+						if(tempFile.getName().indexOf(realFileName+"$") != -1) {
+							copyFile(tempFile.getAbsolutePath(), desFilePathStr + "/" + tempFile.getName());
+							System.out.println(tempFile.getAbsolutePath() + "复制完成");
+						}
+					}
+				}
 			}else if (fullFileName.indexOf(CONFIG+"/") != -1) {
 				// 配置文件处理
 				String fileName = fullFileName.substring(fullFileName.indexOf(CONFIG)+CONFIG.length());
@@ -157,10 +170,8 @@ public class PackageUtil {
 				if(isNotFile(fullFileName)) continue;
 				String tempDesPath = fileName.substring(0,
 						fileName.lastIndexOf("/"));
-				String desFilePathStr = DES_PATH + version + WEB_ROOT
-						+ "/WEB-INF/classes" + tempDesPath;
-				String desFileNameStr = DES_PATH + version + WEB_ROOT
-						+ "/WEB-INF/classes" + fileName;
+				String desFilePathStr = getDesFilePath(tempDesPath);
+				String desFileNameStr = getDesFilePath(fileName);
 				File desFilePath = new File(desFilePathStr);
 				if (!desFilePath.exists()) {
 					desFilePath.mkdirs();
@@ -186,8 +197,13 @@ public class PackageUtil {
 				unKnownFileCNT++;
 				System.out.println("未识别文件:"+fullFileName);
 			}
-			packageCNT++;
 		}
+	}
+	
+	private static String getDesFilePath(String pathName) {
+		StringBuffer path = new StringBuffer(DES_PATH);
+		path.append(version).append(WEB_ROOT).append("/WEB-INF/classes").append(pathName);
+		return path.toString();
 	}
 	
 	private static boolean isNotFile(String fileName) {
@@ -219,6 +235,7 @@ public class PackageUtil {
 			}
 			// 刷新此缓冲的输出流
 			outBuff.flush();
+			packageCNT++;
 		} finally {
 			// 关闭流
 			if (inBuff != null)
