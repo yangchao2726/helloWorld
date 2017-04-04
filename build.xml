@@ -26,11 +26,25 @@
 				<containsregex byline="true" pattern="^([\s]+)(?:A|M)([\s]+)(.+)$" replace="\3" />
 			</filterchain>
 		</concat>
-		<!-- 将src目录替换为classes目录 主要针对提交的代码 -->
+		<!-- 将src目录替换为classes目录 主要针对提交的java代码 -->
 		<replaceregexp file="${patch.includesfile}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:src)/(.+)\..+$" />
 			<substitution expression="WebRoot/WEB-INF/classes/\1*.class" />
+		</replaceregexp>
+		
+		<!-- 将config目录下的xml配置文件目录替换到classes目录下 -->
+		<replaceregexp file="${patch.includesfile}" byline="true">
+			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
+			<regexp pattern="^/.+/(?:config)/(.+)\.xml$" />
+			<substitution expression="WebRoot/WEB-INF/classes/\1.xml" />
+		</replaceregexp>
+		
+		<!-- 将config目录下的properties配置文件目录替换到classes目录下 -->
+		<replaceregexp file="${patch.includesfile}" byline="true">
+			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
+			<regexp pattern="^/.+/(?:config)/(.+)\.properties$" />
+			<substitution expression="WebRoot/WEB-INF/classes/\1.properties" />
 		</replaceregexp>
 		
 		<!-- 替换掉WebRoot/前面的路径 主要针对提交.js .css 等图片页面文件 -->
