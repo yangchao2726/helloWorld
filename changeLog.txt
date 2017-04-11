@@ -1,0 +1,15 @@
+r18166 | cuizhongguo | 2017-04-10 14:49:18 CST
+Changed paths:
+	A /helloWorld/src/main/java/com/bfec/dsdemo/controller/HomeController.java
+	A /helloWorld/src/main/java/com/bfec/dsdemo/controller/TestBeanController.java
+	M /helloWorld/src/main/java/com/bfec/dsdemo/dynamicds/annotation/DataSource.java
+	M /helloWorld/src/main/java/com/bfec/dsdemo/dynamicds/support/DataSourceSupport.java
+	M /helloWorld/src/main/java/com/bfec/dsdemo/mapping/MUserMapper.xml
+	A /helloWorld/src/main/java/com/bfec/dsdemo/service/impl/no_trans/TestBeanServiceImpl.java
+	A /helloWorld/src/main/resources/config.properties
+	A /helloWorld/src/main/webapp/views/user/listUser.jsp
+	A /helloWorld/src/main/webapp/views/testbean/addBean.jsp
+	A /helloWorld/src/main/webapp/WEB-INF/spring/root-context.xml
+
+权限系统需求 
+----------------------------------------------------------------------------
