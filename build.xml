@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="project" default="publish">
+<project basedir="." name="project" default="realease">
 
 	<property file="build.properties" />
 	<tstamp>
@@ -8,70 +8,40 @@
 	<!-- 补丁包名称 -->
 	<property name="dest.zip" value="${project.name}_${date.today}_patch.zip" />
 	
-	
-	
-	
-	
-	
-	
-	
 	<target name="prepare-src" depends="init">
-        <!-- create directories -->
-        <mkdir dir="${build.src}" />
-        <mkdir dir="${jar.dest}" />
-        <mkdir dir="${war.dest}" />
-        <mkdir dir="${buildwar.dest}" />
-        <mkdir dir="${build.lib}" />
-
-        <!-- copy src files 首先从工程src目录下copy源码到bulid文件夹的build目录中，以备后面编译时获取源文件 -->
+        <!-- copy /src文件夹，以编译 -->
         <copy todir="${build.src}">
-            <fileset dir="${src.dir}" />
-        </copy>
-        <!--将webapp下的文件全部copy到临时打包目录里面，jar包另外处理-->
-        <copy todir="${buildwar.dest}">
-            <fileset dir="${webapp.dir}">
-                <exclude name="**/*.jar" />
-            </fileset>
-        </copy>
-        <!-- 删除 build/webapp/WEB-INF/lib下面所有文件及目录，不包括lib目录 -->
-        <delete includeemptydirs="true">
-            <fileset dir="${buildwar.dest}/WEB-INF/lib" includes="**/*" />
-        </delete>
-        <!--copy 所有jar到 build/lib下，以备打war包用，只复制jar，不复制目录 -->
-        <copy todir="${build.lib}" flatten="true">
-            <fileset dir="${lib.dir}">
-                <include name="**/*.jar" />
+            <fileset dir="${src.dir}" >
+            	<include name="**/*.java" />
             </fileset>
         </copy>
     </target>
-	
-	
-	 <target name="build" depends="prepare-src">
+	<target name="compile" depends="prepare-src">
         <echo message="开始编译............."></echo>
-        <javac srcdir="${build.src}" destdir="${buildwar.dest}/WEB-INF/classes" memorymaximumsize="500M" fork="true" encoding="UTF8" debug="${debug}" optimize="${optimize}">
-            <classpath refid="classpath" />
+        <javac destdir="${build.dest}" source="${source.version}" target="${target.version}" includejavaruntime="true" includeAntRuntime="false" debug="${debug}" memorymaximumsize="500M" debuglevel="${debuglevel}" fork="true" optimize="${optimize}" encoding="utf-8">
+           <src path="${build.src}" />
+           <classpath>
+               <path refid="classpath" />
+               <path refid="javaEE5.lib" />
+           </classpath>
         </javac>
-        <copy todir="${build.classes}">
-            <fileset dir="${buildwar.dest}/WEB-INF/classes" />
+        <copy todir="${build.dest}">
+            <fileset dir="${src.dir}">
+            	<include name="**/*.xml" />
+            	<include name="**/*.properties" />
+            </fileset>
+        </copy>
+        <copy todir="${build.dest}">
+            <fileset dir="${config.dir}">
+            	<include name="**/*.xml" />
+            	<include name="**/*.properties" />
+            </fileset>
         </copy>
         <echo message="编译成功............."></echo>
     </target>
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	<!-- target:从svn日志中，取出checkin文件 -->
-	<target name="patchfile" depends="init" description="处理 svn_changge 日志 ">
+	<target name="patchfile" description="处理 svn_changge 日志 ">
 		<!-- 去掉 SVN日志中的注释，只保留Added和Modified记录 -->
 		<concat destfile="${patch.includesfile}" append="false" force="true">
 			<fileset file="${change.log}" />
@@ -91,42 +61,42 @@
 		<replaceregexp file="${patch.includesfile}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:src)/(.+)\.java$" />
-			<substitution expression="${WebRoot.name}/WEB-INF/classes/\1.class" />
+			<substitution expression="${build.dest.match}/\1.class" />
 		</replaceregexp>
 		
 		<!-- 将src目录下的【内部类】替换到classes目录 主要针对提交的java代码 -->
 		<replaceregexp file="${patch.includesfile.java}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:src)/(.+)\.java$" />
-			<substitution expression="${WebRoot.name}/WEB-INF/classes/\1$*.class" />
+			<substitution expression="${build.dest.match}/\1$*.class" />
 		</replaceregexp>
 		
 		<!-- 将src目录下的xml配置文件替换到classes目录下 主要针对提交的xml -->
 		<replaceregexp file="${patch.includesfile}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:src)/(.+)\.xml$" />
-			<substitution expression="${WebRoot.name}/WEB-INF/classes/\1.xml" />
+			<substitution expression="${build.dest.match}/\1.xml" />
 		</replaceregexp>
 		
 		<!-- 将src目录下的properties文件替换到classes目录下 主要针对提交的properties文件 -->
 		<replaceregexp file="${patch.includesfile}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:src)/(.+)\.properties$" />
-			<substitution expression="${WebRoot.name}/WEB-INF/classes/\1.properties" />
+			<substitution expression="${build.dest.match}/\1.properties" />
 		</replaceregexp>
 		
 		<!-- 将config目录下的xml配置文件替换到classes目录下 -->
 		<replaceregexp file="${patch.includesfile}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:config)/(.+)\.xml$" />
-			<substitution expression="${WebRoot.name}/WEB-INF/classes/\1.xml" />
+			<substitution expression="${build.dest.match}/\1.xml" />
 		</replaceregexp>
 		
 		<!-- 将config目录下的properties配置文件替换到classes目录下 -->
 		<replaceregexp file="${patch.includesfile}" byline="true">
 			<!-- (?:X) X作为非捕获组 相当于java的group概念 提取出代码的相对路径 -->
 			<regexp pattern="^/.+/(?:config)/(.+)\.properties$" />
-			<substitution expression="${WebRoot.name}/WEB-INF/classes/\1.properties" />
+			<substitution expression="${build.dest.match}/\1.properties" />
 		</replaceregexp>
 		
 		<!-- 替换掉WebRoot/前面的路径 主要针对提交.js .css 等图片页面文件 -->
@@ -154,14 +124,14 @@
 		</zip>
 	</target>
 	
-	<!-- target:release without compile -->
-	<target name="patch_without_compile" depends="patchfile, package"
+	<!-- target:release -->
+	<target name="patch_after_compile" depends="patchfile, package"
 		description="--> release">
 		<echo  level="info">补丁包打包结束</echo>
 	</target>
 	
 	<!-- shutdown_tomcat -->
-    <target name="shutdowntomcat" depends="patch_without_compile" description="========shutdowntomcat===========">
+    <target name="shutdowntomcat" description="========shutdowntomcat===========">
     	<echo message="###关闭Tomcat开始###" level="info" />
     	<!-- <sshexec failonerror="true" command="${tomcat.home}/bin/daemon.sh stop" host="${remote.server.ip}" username="${remote.server.name}" password="${remote.server.pwd}"  trust="true"/> -->
     	<sshexec port="${remote.server.port}" failonerror="true" command="${tomcat.home}/bin/shutdown.sh" host="${remote.server.ip}" username="${remote.server.name}" password="${remote.server.pwd}"  trust="true"/>
@@ -199,7 +169,11 @@
     </target>
     
     <!-- 部署，启动关闭tomcat-->
-	<target name="publish">
+	<target name="realease">
+		<!-- 编译 -->
+		<antcall target="compile" />
+		<!-- 打包 -->
+		<antcall target="patch_after_compile" />
 		<!-- 停止tomcat -->
 		<antcall target="shutdowntomcat" />
 		<!-- 分发更新文件 -->
@@ -207,17 +181,31 @@
 		<!-- 启动tomcat -->
 		<antcall target="startuptomcat" />
 		<!-- 上传补丁包到ftp服务器 -->
-		<!-- <antcall target="upload_to_ftp" /> -->
+		<antcall target="upload_to_ftp" />
 	</target>
 	
 	<!-- - - - - - - - - -target: init - - - - - - - - - -->
 	<target name="init" depends="clear">
 		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.src}" />
+		<mkdir dir="${build.dest}" />
+		<!--   classpath -->
+        <path id="classpath">
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar" />
+            </fileset>
+        </path>
+	    <path id="javaEE5.lib">
+	        <fileset dir="${javaEE5.lib}">
+	            <include name="**/*.jar" />
+	        </fileset>
+	    </path>
 	</target>
 	
 	<!-- - - - - - - - - -target: clear - - - - - - - - - -->
 	<target name="clear">
 		<delete dir="${build.dir}" />
+		<delete dir="${build.dest}" />
 		<!-- <delete dir="${tomcat.home}/work/Catalina/localhost/${project.name}" />
 		<delete dir="${tomcat.home}/webapps/${project.name}" />
         <delete dir="${tomcat.home}/webapps/${project.name}.war" />
